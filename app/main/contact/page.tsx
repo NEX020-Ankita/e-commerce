@@ -36,7 +36,10 @@ export default function ContactPage() {
     try {
       const { error } = await supabase
         .from('contacts')
-        .insert([formData]);
+        .insert([{
+          ...formData,
+          created_at: new Date().toISOString()
+        }]);
       
       if (error) {
         console.error('Error saving contact:', error);

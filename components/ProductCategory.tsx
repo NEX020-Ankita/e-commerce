@@ -379,6 +379,7 @@ export function ProductCategory() {
                   <th className="border border-gray-300 px-4 py-2 text-left">Image</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Title</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Description</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Category</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Price</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Created</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Actions</th>
@@ -400,6 +401,7 @@ export function ProductCategory() {
                     </td>
                     <td className="border border-gray-300 px-4 py-2 font-medium">{product.title}</td>
                     <td className="border border-gray-300 px-4 py-2">{product.description}</td>
+                    <td className="border border-gray-300 px-4 py-2">{product.category}</td>
                     <td className="border border-gray-300 px-4 py-2">₹{product.price}</td>
                     <td className="border border-gray-300 px-4 py-2 text-sm text-gray-600">
                       {new Date(product.created_at).toLocaleDateString()}

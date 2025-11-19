@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function AdminSidebar() {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
-    <div className="w-64 bg-gray-900 text-white h-screen fixed left-0 top-0 z-50 overflow-y-auto">
+    <div className="w-64 bg-white text-black h-screen fixed left-0 top-0 z-50 overflow-y-auto border-r border-gray-200 shadow-lg">
       <div className="p-6">
         <h1 className="text-xl font-bold">Admin Dashboard</h1>
       </div>
@@ -16,7 +18,9 @@ export default function AdminSidebar() {
           <li>
             <a
               href="/admin/alluser"
-              className="flex items-center px-6 py-3 hover:bg-gray-800 transition-colors"
+              className={`flex items-center px-6 py-3 hover:bg-gray-100 transition-colors ${
+                pathname === '/admin/alluser' ? 'bg-blue-100 text-blue-600 border-r-4 border-blue-600' : ''
+              }`}
             >
               <span>All Users</span>
             </a>
@@ -25,7 +29,7 @@ export default function AdminSidebar() {
           <li>
             <button
               onClick={() => setIsProductsOpen(!isProductsOpen)}
-              className="w-full flex items-center justify-between px-6 py-3 hover:bg-gray-800 transition-colors"
+              className="w-full flex items-center justify-between px-6 py-3 hover:bg-gray-100 transition-colors"
             >
               <span>Products</span>
               <span
@@ -38,11 +42,13 @@ export default function AdminSidebar() {
             </button>
 
             {isProductsOpen && (
-              <ul className="bg-gray-800 space-y-1">
+              <ul className="bg-gray-50 space-y-1">
                 <li>
                   <a
                     href="/admin/product"
-                    className="block px-12 py-2 hover:bg-gray-700 transition-colors"
+                    className={`block px-12 py-2 hover:bg-gray-200 transition-colors ${
+                      pathname === '/admin/product' ? 'bg-blue-100 text-blue-600' : ''
+                    }`}
                   >
                     All Products
                   </a>
@@ -50,7 +56,9 @@ export default function AdminSidebar() {
                 <li>
                   <a
                     href="/admin/add-product"
-                    className="block px-12 py-2 hover:bg-gray-700 transition-colors"
+                    className={`block px-12 py-2 hover:bg-gray-200 transition-colors ${
+                      pathname === '/admin/add-product' ? 'bg-blue-100 text-blue-600' : ''
+                    }`}
                   >
                     Add Product
                   </a>
@@ -58,7 +66,9 @@ export default function AdminSidebar() {
                 <li>
                   <a
                     href="/admin/categories"
-                    className="block px-12 py-2 hover:bg-gray-700 transition-colors"
+                    className={`block px-12 py-2 hover:bg-gray-200 transition-colors ${
+                      pathname === '/admin/categories' ? 'bg-blue-100 text-blue-600' : ''
+                    }`}
                   >
                     Categories
                   </a>
@@ -69,7 +79,9 @@ export default function AdminSidebar() {
           <li>
             <a
               href="/admin/banner"
-              className="flex items-center px-6 py-3 hover:bg-gray-800 transition-colors"
+              className={`flex items-center px-6 py-3 hover:bg-gray-100 transition-colors ${
+                pathname === '/admin/banner' ? 'bg-blue-100 text-blue-600 border-r-4 border-blue-600' : ''
+              }`}
             >
               <span>Banner</span>
             </a>
@@ -77,7 +89,9 @@ export default function AdminSidebar() {
           <li>
             <a
               href="/admin/query"
-              className="flex items-center px-6 py-3 hover:bg-gray-800 transition-colors"
+              className={`flex items-center px-6 py-3 hover:bg-gray-100 transition-colors ${
+                pathname === '/admin/query' ? 'bg-blue-100 text-blue-600 border-r-4 border-blue-600' : ''
+              }`}
             >
               <span>Query</span>
             </a>
