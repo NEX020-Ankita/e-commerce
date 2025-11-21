@@ -12,7 +12,7 @@ interface Product {
   description: string;
   price: number;
   category: string;
-  image_url?: string;
+  image_urls?: string[];
   created_at: string;
 }
 
@@ -81,7 +81,18 @@ export function ProductGrid({ categoryFilter, searchTerm, cart, updateCart }: Pr
     router.push(`/product/${productId}`);
   };
 
-  if (products.length === 0) return null;
+  if (products.length === 0) {
+    return (
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-10">All Products</h2>
+          <div className="text-center py-8">
+            <p className="text-gray-500">No products available. Add products from the admin panel.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-12 bg-gray-50">
@@ -104,7 +115,11 @@ export function ProductGrid({ categoryFilter, searchTerm, cart, updateCart }: Pr
                 onClick={() => handleProductClick(product.id)}
               >
                 <Image
-                  src={product.image_url || '/lan.webp'}
+                  src={
+                    Array.isArray(product.image_urls) && product.image_urls.length > 0
+                      ? product.image_urls[0]
+                      : '/lan.webp'
+                  }
                   alt={product.title}
                   width={300}
                   height={200}

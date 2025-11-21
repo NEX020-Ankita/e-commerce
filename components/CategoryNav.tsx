@@ -58,7 +58,7 @@ export function CategoryNav({ onCategoryFilter }: CategoryNavProps) {
             <p className="text-gray-500">No categories available. Add categories from admin panel.</p>
           </div>
         ) : (
-          <div className="flex items-start text-center">
+          <div className="flex items-start text-center gap-8">
             <div
               className="flex flex-col items-center justify-center space-y-1 w-24 relative cursor-pointer hover:bg-gray-50 p-2 rounded-lg"
               onClick={() => handleCategoryClick(null)}

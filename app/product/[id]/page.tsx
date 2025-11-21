@@ -23,6 +23,8 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [images, setImages] = useState<string[]>([]);
+  const [userRating, setUserRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
 
   useEffect(() => {
     if (params.id) {
@@ -54,6 +56,12 @@ export default function ProductDetailPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRating = async (rating: number) => {
+    setUserRating(rating);
+    // Here you could save the rating to database
+    console.log(`Rated product ${product?.id} with ${rating} stars`);
   };
 
   if (loading) {
@@ -134,37 +142,38 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center bg-green-600 text-white px-2 py-0.5 rounded-full text-sm font-semibold">
-              4.2 <Star className="h-3 w-3 fill-white ml-1" />
-            </div>
-            <p className="text-muted-foreground">19 ratings and 0 reviews</p>
+           
+           
           </div>
 
-
           <div className="space-y-2">
-            <p className="font-semibold">Images</p>
-            <div className="flex gap-2">
-              {images.map((image, index) => (
+            <p className="font-semibold">Rate this product</p>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
                 <button
-                  key={index}
-                  onClick={() => setSelectedImageIndex(index)}
-                  className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${
-                    selectedImageIndex === index
-                      ? "border-blue-600"
-                      : "border-gray-200"
-                  } cursor-pointer`}
+                  key={star}
+                  onClick={() => handleRating(star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  className="transition-colors"
                 >
-                  <Image
-                    src={image}
-                    alt={`${product.title} ${index + 1}`}
-                    width={64}
-                    height={64}
-                    className="w-full h-full object-cover"
+                  <Star
+                    className={`h-6 w-6 ${
+                      star <= (hoverRating || userRating)
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                    }`}
                   />
                 </button>
               ))}
             </div>
+            {userRating > 0 && (
+              <p className="text-sm text-green-600">Thank you for rating this product {userRating} star{userRating > 1 ? 's' : ''}!</p>
+            )}
           </div>
+
+
+
 
           <div className="space-y-2">
             <p className="font-semibold">Size</p>

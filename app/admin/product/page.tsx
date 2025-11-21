@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TiptapEditor } from "@/components/TiptapEditor";
 
 interface Product {
   id: number;
@@ -43,6 +44,7 @@ export default function ProductPage() {
 
   const fetchProducts = async () => {
     try {
+      
       const { data, error } = await supabase
         .from("product")
         .select("*")
@@ -257,7 +259,7 @@ export default function ProductPage() {
                       >
                         <Image
                           src={
-                            product.image_urls
+                            Array.isArray(product.image_urls) && product.image_urls.length > 0
                               ? product.image_urls[0]
                               : "/lan.webp"
                           }
@@ -349,20 +351,32 @@ export default function ProductPage() {
 
         {/* Edit Modal */}
         {editDialogOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              
+              {/* Header */}
+              <div className="flex justify-between items-start p-6 border-b border-gray-100">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Edit Product</h2>
+                  <p className="text-sm text-gray-500 mt-1">Update the details for the selected product.</p>
+                </div>
+                <button 
+                  onClick={handleEditCancel}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  Edit Product
-                </h2>
+                </button>
               </div>
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-                <div className="space-y-4">
+
+              {/* Body */}
+              <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                {/* Left Column: Form Fields */}
+                <div className="md:col-span-2 space-y-5">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
                       Product Title
                     </label>
                     <Input
@@ -370,135 +384,114 @@ export default function ProductPage() {
                       onChange={(e) =>
                         setEditForm({ ...editForm, title: e.target.value })
                       }
-                      className="h-10 border-2 border-gray-200 focus:border-blue-500 rounded-lg"
-                      placeholder="Enter product title"
+                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                      placeholder="Premium Wireless Headphones"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
                       Description
                     </label>
-                    <textarea
-                      value={editForm.description || ""}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, description: e.target.value })
+                    <TiptapEditor
+                      content={editForm.description || ""}
+                      onChange={(content) =>
+                        setEditForm({ ...editForm, description: content })
                       }
-                      className="w-full h-20 p-3 border-2 border-gray-200 focus:border-blue-500 rounded-lg resize-none focus:outline-none"
-                      placeholder="Enter product description"
+                      placeholder="Product description..."
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+
+                  <div className="grid grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Category
                       </label>
-                      <Input
-                        value={editForm.category || ""}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, category: e.target.value })
-                        }
-                        className="h-10 border-2 border-gray-200 focus:border-blue-500 rounded-lg"
-                        placeholder="Category"
-                      />
+                      <div className="relative">
+                        <Input
+                          value={editForm.category || ""}
+                          onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                          className="w-full p-2.5 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
                     </div>
+
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Price (₹)
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
+                        Price
                       </label>
-                      <Input
-                        type="number"
-                        value={editForm.price || ""}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            price: Number(e.target.value),
-                          })
-                        }
-                        className="h-10 border-2 border-gray-200 focus:border-blue-500 rounded-lg"
-                        placeholder="0"
-                      />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">₹</span>
+                        <Input
+                          type="number"
+                          value={editForm.price || ""}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              price: Number(e.target.value),
+                            })
+                          }
+                          className="w-full p-2.5 pl-7 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                          placeholder="0.00"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Product Images
-                    </label>
-                    <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300">
-                      <div className="flex gap-3 items-center mb-3">
-                        {selectedProduct?.image_urls &&
-                        selectedProduct.image_urls.length > 1 ? (
-                          selectedProduct.image_urls.map((url, index) => (
-                            <div key={index} className="relative">
-                              <Image
-                                src={url}
-                                alt={`Current ${index + 1}`}
-                                width={60}
-                                height={60}
-                                className="w-15 h-15 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
-                              />
-                              <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                {index + 1}
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="relative">
-                            <Image
-                              src={
-                                selectedProduct?.image_urls && selectedProduct.image_urls[0]
-                                  ? selectedProduct.image_urls[0]
-                                  : "/lan.webp"
-                              }
-                              alt="Current"
-                              width={60}
-                              height={60}
-                              className="w-15 h-15 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
-                            />
-                            <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                              ✓
-                            </span>
-                          </div>
-                        )}
-                        {imagePreview &&
-                          imagePreview !== (selectedProduct?.image_urls?.[0] || '') && (
-                            <div className="relative">
-                              <Image
-                                src={imagePreview}
-                                alt="New"
-                                width={60}
-                                height={60}
-                                className="w-15 h-15 object-cover rounded-lg border-2 border-blue-400 shadow-sm"
-                              />
-                              <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                N
-                              </span>
-                            </div>
-                          )}
-                      </div>
+                </div>
+
+                {/* Right Column: Image Upload */}
+                <div className="md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Product Image
+                  </label>
+                  
+                  <div className="bg-[#1a1a1a] rounded-xl aspect-square flex items-center justify-center overflow-hidden relative group shadow-inner border border-gray-200">
+                    {imagePreview ? (
+                      <Image
+                        src={imagePreview}
+                        alt="Preview"
+                        width={300}
+                        height={300}
+                        className="w-full h-full object-contain p-4"
+                      />
+                    ) : (
+                      <div className="text-gray-500 text-sm">No image</div>
+                    )}
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="flex items-center justify-center w-full px-4 py-2.5 bg-gray-50 text-gray-700 font-medium text-sm rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer transition-all gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      Change Image
                       <input
                         type="file"
                         accept="image/*"
                         onChange={handleImageChange}
-                        className="w-full p-2 text-sm border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        className="hidden"
                       />
-                    </div>
+                    </label>
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-6 py-4 flex gap-3">
+
+              {/* Footer */}
+              <div className="px-8 py-5 bg-white border-t border-gray-100 flex justify-end gap-3">
                 <button
                   onClick={handleEditCancel}
-                  className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+                  className="px-6 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all font-medium shadow-lg"
+                  className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
                 >
                   Save Changes
                 </button>
               </div>
+
             </div>
           </div>
         )}

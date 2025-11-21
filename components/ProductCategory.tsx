@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Upload } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
+import { TiptapEditor } from './TiptapEditor';
 
 interface Product {
   id: number;
@@ -267,14 +268,10 @@ export function ProductCategory() {
 
           <div>
             <label className="block text-sm font-medium mb-2">Description</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
+            <TiptapEditor
+              content={formData.description}
+              onChange={(content) => setFormData({ ...formData, description: content })}
               placeholder="Enter product description"
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
             />
           </div>
 
