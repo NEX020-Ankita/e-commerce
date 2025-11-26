@@ -58,7 +58,7 @@ export default function MyOrdersPage() {
         const processedOrders = await Promise.all(
           (data || []).map(async (order) => {
             if (Array.isArray(order.items) && order.items.length > 0) {
-              const productIds = order.items.map(item => item.id).filter(Boolean);
+              const productIds = order.items.map((item: any) => item.id).filter(Boolean);
               
               if (productIds.length > 0) {
                 const { data: products } = await supabase
@@ -66,7 +66,7 @@ export default function MyOrdersPage() {
                   .select('*')
                   .in('id', productIds);
                 
-                const processedItems = order.items.map(orderItem => {
+                const processedItems = order.items.map((orderItem: any) => {
                   const productData = products?.find(p => p.id === orderItem.id);
                   return {
                     ...productData,

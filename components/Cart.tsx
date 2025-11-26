@@ -11,7 +11,7 @@ interface Product {
   title: string;
   price: number;
   image_urls?: string[];
-  
+  image_url?: string;
 }
 
 interface CartItem extends Product {
@@ -54,7 +54,7 @@ export function Cart({ cart, updateCart }: CartProps) {
           console.log('Product image_urls:', product.image_urls);
           return {
             ...product,
-            image_urls: Array.isArray(product.image_urls) ? product.image_urls[0] : product.image_urls,
+            image_url: Array.isArray(product.image_urls) ? product.image_urls[0] : product.image_urls,
             quantity: cart[product.id]
           };
         }) || [];

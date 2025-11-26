@@ -46,7 +46,7 @@ export default function OrdersPage() {
           
           // If items exist and have product IDs, fetch full product details
           if (Array.isArray(order.items) && order.items.length > 0) {
-            const productIds = order.items.map(item => item.id).filter(Boolean);
+            const productIds = order.items.map((item: any) => item.id).filter(Boolean);
             
             if (productIds.length > 0) {
               const { data: products } = await supabase
@@ -55,7 +55,7 @@ export default function OrdersPage() {
                 .in('id', productIds);
               
               // Merge order item data with product data
-              processedItems = order.items.map(orderItem => {
+              processedItems = order.items.map((orderItem: any) => {
                 const productData = products?.find(p => p.id === orderItem.id);
                 return {
                   ...productData,
