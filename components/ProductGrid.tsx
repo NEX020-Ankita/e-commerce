@@ -72,7 +72,11 @@ export function ProductGrid({ categoryFilter, searchTerm, cart, updateCart }: Pr
   };
 
   const addToCart = (productId: number) => {
-    updateCart(productId, ((cart && cart[productId]) || 0) + 1);
+    const currentCart = JSON.parse(localStorage.getItem('cart') || '{}');
+    const newQuantity = (currentCart[productId] || 0) + 1;
+    currentCart[productId] = newQuantity;
+    localStorage.setItem('cart', JSON.stringify(currentCart));
+    updateCart(productId, newQuantity);
   };
 
   const getCartCount = (productId: number) => (cart && cart[productId]) || 0;

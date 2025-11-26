@@ -88,12 +88,22 @@ export default function AdminSidebar() {
           </li>
           <li>
             <a
+              href="/admin/orders"
+              className={`flex items-center px-6 py-3 hover:bg-gray-100 transition-colors ${
+                pathname === '/admin/orders' ? 'bg-blue-100 text-blue-600 border-r-4 border-blue-600' : ''
+              }`}
+            >
+              <span>Orders</span>
+            </a>
+          </li>
+          <li>
+            <a
               href="/admin/query"
               className={`flex items-center px-6 py-3 hover:bg-gray-100 transition-colors ${
                 pathname === '/admin/query' ? 'bg-blue-100 text-blue-600 border-r-4 border-blue-600' : ''
               }`}
             >
-              <span>Query</span>
+              <span>Contacts</span>
             </a>
           </li>
         </ul>

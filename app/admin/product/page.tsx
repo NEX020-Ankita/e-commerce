@@ -25,6 +25,7 @@ interface Product {
   price: number;
   category: string;
   image_urls?: string[];
+  rating:number;
   created_at: string;
 }
 

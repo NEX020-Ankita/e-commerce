@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MainPage from "./main/page";
 import { ProductGrid } from "@/components/ProductGrid";
 
@@ -9,19 +9,22 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [cart, setCart] = useState<{[key: number]: number}>({});
 
-  const updateCart = (productId: number, quantity: number) => {
-    if (quantity <= 0) {
-      setCart(prev => {
-        const newCart = { ...prev };
-        delete newCart[productId];
-        return newCart;
-      });
-    } else {
-      setCart(prev => ({
-        ...prev,
-        [productId]: quantity
-      }));
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      setCart(JSON.parse(savedCart));
     }
+  }, []);
+
+  const updateCart = (productId: number, quantity: number) => {
+    const newCart = { ...cart };
+    if (quantity <= 0) {
+      delete newCart[productId];
+    } else {
+      newCart[productId] = quantity;
+    }
+    setCart(newCart);
+    localStorage.setItem('cart', JSON.stringify(newCart));
   };
 
   return (

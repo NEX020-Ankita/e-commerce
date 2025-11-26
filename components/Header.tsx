@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, User, Store, MoreVertical, LogOut } from "lucide-react";
+import { Search, User, Store, MoreVertical, LogOut, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -22,6 +22,7 @@ export function Header({
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -52,7 +53,7 @@ export function Header({
   };
 
   return (
-    <header className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-200">
+    <header className="bg-indigo-50 shadow-lg sticky top-0 z-50 border-b bg-indigo-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -61,7 +62,7 @@ export function Header({
               <h1 className="text-2xl font-extrabold italic text-blue-600">
                 Flipkart
               </h1>
-              <p className="text-xs text-gray-500 italic">
+              <p className="text-xs font-semibold text-blue-800 -mt-1 flex items-center">
                 Explore
                 <span className="ml-1 text-yellow-500 font-bold">
                   Plus
@@ -86,17 +87,44 @@ export function Header({
           {/* Navigation Links */}
           <div className="hidden lg:flex items-center space-x-8 ml-8">
             {user ? (
-              <button
-                onClick={handleLogoutClick}
-                className="flex items-center text-md font-semibold text-gray-800 hover:bg-red-100 px-4 py-2 rounded-md transition-colors"
-              >
-                <LogOut className="mr-2 h-5 w-5" />
-                Logout
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  className="flex items-center text-md font-semibold text-b hover:bg-white px-4 py-2 rounded-md transition-colors"
+                >
+                  <User className="mr-2 h-5 w-5" />
+                  My Profile
+                  <ChevronDown className="ml-1 h-4 w-4" />
+                </button>
+                
+                {showProfileDropdown && (
+                  <div className="absolute right-0 top-12 w-48 bg-white border rounded-lg shadow-lg z-50">
+                    <button
+                      onClick={() => {
+                        router.push('/user/orders');
+                        setShowProfileDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-t-lg"
+                    >
+                      My Orders
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleLogoutClick();
+                        setShowProfileDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-red-100 text-red-600 rounded-b-lg border-t"
+                    >
+                      <LogOut className="inline mr-2 h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <button
                 onClick={handleLoginClick}
-                className="flex items-center text-md font-semibold text-gray-800 hover:bg-blue-100 px-4 py-2 rounded-md transition-colors"
+                className="flex items-center text-md font-semibold text-white hover:bg-blue-700 px-4 py-2 rounded-md transition-colors"
               >
                 <User className="mr-2 h-5 w-5" />
                 Login

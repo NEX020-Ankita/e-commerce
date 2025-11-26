@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import Image from 'next/image';
-import { ShoppingCart, ArrowLeft, Star } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import Image from "next/image";
+import { ShoppingCart, ArrowLeft, Star } from "lucide-react";
 
 interface Product {
   id: number;
@@ -13,55 +13,122 @@ interface Product {
   price: number;
   category: string;
   image_urls?: string[];
+  rating: number;
   created_at: string;
 }
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [images, setImages] = useState<string[]>([]);
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalRatings, setTotalRatings] = useState(0);
+
+  // 🚀 FIXED: Buy Now Handler
+  const handleBuyNow = () => {
+    if (!product) return;
+    router.push(`/checkout?productId=${product.id}`);
+  };
 
   useEffect(() => {
     if (params.id) {
-      fetchProduct(Number(params.id));
+      const id = Number(params.id);
+      fetchProduct(id);
+      fetchRatings(id);
     }
   }, [params.id]);
 
   const fetchProduct = async (id: number) => {
     try {
       const { data, error } = await supabase
-        .from('product')
-        .select('*')
-        .eq('id', id)
+        .from("product")
+        .select("*")
+        .eq("id", id)
         .single();
-      console.log("data", data, error);
+
       if (error) {
-        console.error('Error fetching product:', error);
+        console.error("Error fetching product:", error);
       } else {
         setProduct(data);
+
         // Handle multiple images
-        let imageUrls = [];
+        let imageUrls: string[] = [];
         if (Array.isArray(data.image_urls)) {
           imageUrls = data.image_urls;
         }
         setImages(imageUrls.filter(Boolean));
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchRatings = async (id: number) => {
+    try {
+      const { data, error } = await supabase
+        .from("product")
+        .select("rating")
+        .eq("id", id);
+
+      if (error) {
+        console.error("Error fetching ratings:", error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const ratings = data.map((r) => r.rating);
+        const avg =
+          ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
+
+        setAverageRating(Math.round(avg * 10) / 10);
+        setTotalRatings(ratings.length);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   const handleRating = async (rating: number) => {
-    setUserRating(rating);
-    // Here you could save the rating to database
-    console.log(`Rated product ${product?.id} with ${rating} stars`);
+    if (!product) return;
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        alert("Please login to rate this product");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("product")
+        .update({
+          rating: rating,
+        })
+        .eq("id", product.id)
+        .select();
+
+      if (error) {
+        console.error("Error saving rating:", error);
+        alert("Failed to save rating");
+        return;
+      }
+
+      setUserRating(rating);
+      fetchRatings(product.id);
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to save rating");
+    }
   };
 
   if (loading) {
@@ -92,12 +159,9 @@ export default function ProductDetailPage() {
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <div className="space-y-4">
-          {/* Main Image */}
           <div className="aspect-square overflow-hidden rounded-lg">
             <Image
-              src={
-                images[selectedImageIndex] || "/lan.webp"
-              }
+              src={images[selectedImageIndex] || "/lan.webp"}
               alt={product.title}
               width={500}
               height={500}
@@ -105,7 +169,6 @@ export default function ProductDetailPage() {
             />
           </div>
 
-          {/* Image Thumbnails */}
           {images.length > 1 && (
             <div className="flex gap-2 overflow-x-auto">
               {images.map((image, index) => (
@@ -136,16 +199,25 @@ export default function ProductDetailPage() {
           <h1 className="text-3xl font-bold">{product.title}</h1>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-2xl">₹{product.price}</span>
-            </div>
+            <span className="font-semibold text-2xl">₹{product.price}</span>
           </div>
 
+          {/* Rating */}
           <div className="flex items-center gap-2">
-           
-           
+            {averageRating > 0 && (
+              <>
+                <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm font-medium">{averageRating}</span>
+                </div>
+                <span className="text-sm text-gray-500">
+                  ({totalRatings} rating{totalRatings !== 1 ? "s" : ""})
+                </span>
+              </>
+            )}
           </div>
 
+          {/* Rate product */}
           <div className="space-y-2">
             <p className="font-semibold">Rate this product</p>
             <div className="flex gap-1">
@@ -155,7 +227,6 @@ export default function ProductDetailPage() {
                   onClick={() => handleRating(star)}
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
-                  className="transition-colors"
                 >
                   <Star
                     className={`h-6 w-6 ${
@@ -167,28 +238,9 @@ export default function ProductDetailPage() {
                 </button>
               ))}
             </div>
-            {userRating > 0 && (
-              <p className="text-sm text-green-600">Thank you for rating this product {userRating} star{userRating > 1 ? 's' : ''}!</p>
-            )}
           </div>
 
-
-
-
-          <div className="space-y-2">
-            <p className="font-semibold">Size</p>
-            <div className="flex flex-wrap gap-2">
-              {["S", "M", "L", "XL", "XXL"].map((size) => (
-                <button
-                  key={size}
-                  className="w-16 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-          </div>
-
+          {/* Description */}
           <div className="space-y-2">
             <p className="font-semibold">Description</p>
             <p className="text-gray-700 leading-relaxed">
@@ -197,11 +249,16 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex gap-4 pt-4">
-            <button className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors">
+            <button className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700">
               <ShoppingCart className="h-5 w-5" />
               Add to Cart
             </button>
-            <button className="flex-1 bg-orange-600 text-white py-3 px-6 rounded-lg hover:bg-orange-700 transition-colors">
+
+            {/* 🚀 FIXED BUY NOW BUTTON */}
+            <button
+              onClick={handleBuyNow}
+              className="flex-1 bg-orange-600 text-white py-3 px-6 rounded-lg hover:bg-orange-700"
+            >
               Buy Now
             </button>
           </div>

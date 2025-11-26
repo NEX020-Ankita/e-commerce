@@ -26,7 +26,7 @@ export function BannerDisplay() {
     if (banners.length > 1) {
       const interval = setInterval(() => {
         setCurrentBanner((prev) => (prev + 1) % banners.length);
-      }, 1000); // Auto slide every 3 seconds
+      }, 3000); // Auto slide every 3 seconds
 
       return () => clearInterval(interval);
     }
@@ -75,25 +75,46 @@ export function BannerDisplay() {
   }
 
   return (
-    <div className="relative w-full h-64 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg overflow-hidden">
-      <div className="w-full h-full flex items-center justify-between px-8">
-        <div className="flex-1 text-white">
-          <h2 className="text-3xl font-bold mb-4">{banners[currentBanner].title}</h2>
-          <p className="text-lg mb-4">{banners[currentBanner].description}</p>
-          <button className="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-            Learn More
-          </button>
-        </div>
+    <div className="relative w-full h-80 rounded-lg overflow-hidden shadow-xl">
+      {/* Sliding Container */}
+      <div 
+        className="flex transition-transform duration-500 ease-in-out h-full"
+        style={{ transform: `translateX(-${currentBanner * 100}%)` }}
+      >
+        {banners.map((banner, index) => (
+          <div 
+            key={banner.id}
+            className="min-w-full h-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 flex items-center justify-between px-8"
+          >
+            <div className="flex-1 text-white space-y-4">
+              <h2 className="text-4xl font-bold leading-tight">{banner.title}</h2>
+              <p className="text-xl opacity-90 leading-relaxed">{banner.description}</p>
+              <div className="flex gap-4">
+                <button className="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all transform hover:scale-105">
+                  Shop Now
+                </button>
+                <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-purple-600 transition-all">
+                  Learn More
+                </button>
+              </div>
+            </div>
 
-        {banners[currentBanner].image_url && (
-          <div className="flex-1 flex justify-center items-center">
-            <img
-              src={banners[currentBanner].image_url}
-              alt={banners[currentBanner].title}
-              className="w-96 h-48 object-cover rounded-lg shadow-lg"
-            />
+            {banner.image_url && (
+              <div className="flex-1 flex justify-center items-center">
+                <div className="relative">
+                  <Image
+                    src={banner.image_url}
+                    alt={banner.title}
+                    width={400}
+                    height={300}
+                    className="w-96 h-60 object-cover rounded-xl shadow-2xl transform hover:scale-105 transition-transform"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        ))}
       </div>
 
       {banners.length > 1 && (
@@ -112,13 +133,13 @@ export function BannerDisplay() {
             <ChevronRight size={20} />
           </button>
 
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-3">
             {banners.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToBanner(index)}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentBanner ? 'bg-white' : 'bg-white/50'
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === currentBanner ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'
                 }`}
               />
             ))}

@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface Product {
   id: number;
   title: string;
   price: number;
-  image_url?: string;
+  image_urls?: string[];
+  
 }
 
 interface CartItem extends Product {
@@ -22,12 +24,15 @@ interface CartProps {
 }
 
 export function Cart({ cart, updateCart }: CartProps) {
+  const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     fetchCartItems();
   }, [cart]);
+  
+ 
 
   const fetchCartItems = async () => {
     const productIds = Object.keys(cart).map(Number);
@@ -39,16 +44,20 @@ export function Cart({ cart, updateCart }: CartProps) {
     try {
       const { data, error } = await supabase
         .from('product')
-        .select('id, title, price, image_url')
+        .select('id, title, price, image_urls')
         .in('id', productIds);
       
       if (error) {
         console.error('Error fetching cart items:', error);
       } else {
-        const items = data?.map(product => ({
-          ...product,
-          quantity: cart[product.id]
-        })) || [];
+        const items = data?.map(product => {
+          console.log('Product image_urls:', product.image_urls);
+          return {
+            ...product,
+            image_urls: Array.isArray(product.image_urls) ? product.image_urls[0] : product.image_urls,
+            quantity: cart[product.id]
+          };
+        }) || [];
         setCartItems(items);
       }
     } catch (error) {
@@ -132,8 +141,14 @@ export function Cart({ cart, updateCart }: CartProps) {
                 <div className="flex justify-between items-center mb-3">
                   <span className="font-semibold">Total: ₹{totalPrice.toFixed(2)}</span>
                 </div>
-                <button className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors">
-                  Place Order
+                <button 
+                  onClick={() => {
+                    setIsOpen(false);
+                    router.push('/cart');
+                  }}
+                  className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors"
+                >
+                  View Cart
                 </button>
               </div>
             </>
