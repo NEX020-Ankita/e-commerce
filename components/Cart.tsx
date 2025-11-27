@@ -1,17 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface Product {
   id: number;
   title: string;
   price: number;
   image_urls?: string[];
-  image_url?: string;
 }
 
 interface CartItem extends Product {
@@ -19,7 +18,7 @@ interface CartItem extends Product {
 }
 
 interface CartProps {
-  cart: {[key: number]: number};
+  cart: { [key: number]: number };
   updateCart: (productId: number, quantity: number) => void;
 }
 
@@ -31,8 +30,6 @@ export function Cart({ cart, updateCart }: CartProps) {
   useEffect(() => {
     fetchCartItems();
   }, [cart]);
-  
- 
 
   const fetchCartItems = async () => {
     const productIds = Object.keys(cart).map(Number);
@@ -43,30 +40,36 @@ export function Cart({ cart, updateCart }: CartProps) {
 
     try {
       const { data, error } = await supabase
-        .from('product')
-        .select('id, title, price, image_urls')
-        .in('id', productIds);
-      
+        .from("product")
+        .select("id, title, price, image_urls")
+        .in("id", productIds);
+
       if (error) {
-        console.error('Error fetching cart items:', error);
+        console.error("Error fetching cart items:", error);
       } else {
-        const items = data?.map(product => {
-          console.log('Product image_urls:', product.image_urls);
-          return {
-            ...product,
-            image_url: Array.isArray(product.image_urls) ? product.image_urls[0] : product.image_urls,
-            quantity: cart[product.id]
-          };
-        }) || [];
+        const items =
+          data?.map((product) => {
+            console.log("Product image_urls:", product.image_urls);
+            return {
+              ...product,
+              image_url: Array.isArray(product.image_urls)
+                ? product.image_urls[0]
+                : product.image_urls,
+              quantity: cart[product.id],
+            };
+          }) || [];
         setCartItems(items);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     }
   };
 
   const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalPrice = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
   const updateQuantity = (productId: number, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -89,9 +92,9 @@ export function Cart({ cart, updateCart }: CartProps) {
       {isOpen && (
         <div className="absolute right-0 top-12 w-96 bg-white border rounded-lg shadow-lg z-50">
           <div className="p-4 border-b">
-            <h3 className="text-lg font-semibold">Shopping Cart</h3>
+            <h3 className="text-lg font-semibold">Shopping Car</h3>
           </div>
-          
+
           {cartItems.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
               Your cart is empty
@@ -100,9 +103,12 @@ export function Cart({ cart, updateCart }: CartProps) {
             <>
               <div className="max-h-64 overflow-y-auto">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="p-4 border-b flex items-center gap-3">
+                  <div
+                    key={item.id}
+                    className="p-4 border-b flex items-center gap-3"
+                  >
                     <Image
-                      src={item.image_url || '/lan.webp'}
+                      src={Array.isArray(item.image_urls) && item.image_urls.length > 0 ? item.image_urls[0] : "/lan.webp"}
                       alt={item.title}
                       width={50}
                       height={50}
@@ -110,18 +116,24 @@ export function Cart({ cart, updateCart }: CartProps) {
                     />
                     <div className="flex-1">
                       <h4 className="font-medium text-sm">{item.title}</h4>
-                      <p className="text-blue-600 font-semibold">₹{item.price}</p>
+                      <p className="text-blue-600 font-semibold">
+                        ₹{item.price}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity - 1)
+                        }
                         className="p-1 hover:bg-gray-100 rounded"
                       >
                         <Minus className="h-4 w-4" />
                       </button>
                       <span className="px-2">{item.quantity}</span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity + 1)
+                        }
                         className="p-1 hover:bg-gray-100 rounded"
                       >
                         <Plus className="h-4 w-4" />
@@ -136,17 +148,19 @@ export function Cart({ cart, updateCart }: CartProps) {
                   </div>
                 ))}
               </div>
-              
+
               <div className="p-4 border-t">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="font-semibold">Total: ₹{totalPrice.toFixed(2)}</span>
+                  <span className="font-semibold">
+                    Total: ₹{totalPrice.toFixed(2)}
+                  </span>
                 </div>
-                <button 
+                <button
                   onClick={() => {
                     setIsOpen(false);
-                    router.push('/cart');
+                    router.push("/cart");
                   }}
-                  className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors"
+                  className="w-full bg-yellow-300 text-white py-2 rounded hover:bg-yellow-400 transition-colors"
                 >
                   View Cart
                 </button>

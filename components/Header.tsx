@@ -53,7 +53,7 @@ export function Header({
   };
 
   return (
-    <header className="bg-indigo-50 shadow-lg sticky top-0 z-50 border-b bg-indigo-50">
+    <header className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-200">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -62,7 +62,7 @@ export function Header({
               <h1 className="text-2xl font-extrabold italic text-blue-600">
                 Flipkart
               </h1>
-              <p className="text-xs font-semibold text-blue-800 -mt-1 flex items-center">
+              <p className="text-xs font-semibold text-gray-500 -mt-1 flex items-center">
                 Explore
                 <span className="ml-1 text-yellow-500 font-bold">
                   Plus
@@ -90,7 +90,7 @@ export function Header({
               <div className="relative">
                 <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="flex items-center text-md font-semibold text-b hover:bg-white px-4 py-2 rounded-md transition-colors"
+                  className="flex items-center text-md font-semibold text-gray-800 hover:bg-blue-100 px-4 py-2 rounded-md transition-colors"
                 >
                   <User className="mr-2 h-5 w-5" />
                   My Profile
@@ -124,7 +124,7 @@ export function Header({
             ) : (
               <button
                 onClick={handleLoginClick}
-                className="flex items-center text-md font-semibold text-white hover:bg-blue-700 px-4 py-2 rounded-md transition-colors"
+                className="flex items-center text-md font-semibold text-gray-800 hover:bg-blue-100 px-4 py-2 rounded-md transition-colors"
               >
                 <User className="mr-2 h-5 w-5" />
                 Login
@@ -135,14 +135,14 @@ export function Header({
 
             <a
               href="/main/contact"
-              className="flex items-center text-md font-semibold text-gray-800"
+              className="flex items-center text-md font-semibold text-gray-800 hover:bg-blue-100 px-4 py-2 rounded-md transition-colors"
             >
               <Store className="mr-2 h-5 w-5" />
               contact
             </a>
 
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-5 w-5 text-gray-800" />
+            <Button variant="ghost" size="icon" className="text-gray-800 hover:bg-blue-100">
+              <MoreVertical className="h-5 w-5" />
             </Button>
           </div>
         </div>

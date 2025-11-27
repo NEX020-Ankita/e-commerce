@@ -14,8 +14,7 @@ interface MainPageProps {
 export default function MainPage({ onCategoryFilter, cart = {}, updateCart = () => {}, onSearch }: MainPageProps) {
   return (
     <div>
-      <Header cart={cart} updateCart={updateCart} onSearch={onSearch} />
-
+   
       <BannerDisplay />
       <CategoryNav onCategoryFilter={onCategoryFilter} />
     </div>
