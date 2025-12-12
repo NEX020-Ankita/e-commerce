@@ -37,7 +37,7 @@ export function CategoryNav({ onCategoryFilter }: CategoryNavProps) {
       if (error) {
         console.error('Error fetching categories:', error);
       } else {
-        console.log('Fetched categories:', data);
+        //console.log('Fetched categories:', data);
         setCategories(data || []);
       }
     } catch (error) {

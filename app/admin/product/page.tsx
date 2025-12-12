@@ -230,7 +230,7 @@ export default function ProductPage() {
     <AdminAuth>
       <AdminLayout>
         <h1 className="text-3xl font-bold text-center mb-10">All Products</h1>
-        <div className="container mx-auto px-4">
+        <div className="w-full">
           {products.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500">
@@ -273,7 +273,11 @@ export default function ProductPage() {
                       <TableCell className="font-medium">
                         {product.title}
                       </TableCell>
-                      <TableCell>{product.description}</TableCell>
+                      <TableCell>
+                        <div className="max-w-xs truncate">
+                          {product.description.replace(/<[^>]*>/g, '').substring(0, 50)}...
+                        </div>
+                      </TableCell>
                       <TableCell>{product.category}</TableCell>
                       <TableCell>₹{product.price}</TableCell>
                       <TableCell className="text-sm text-gray-600">
@@ -353,10 +357,10 @@ export default function ProductPage() {
         {/* Edit Modal */}
         {editDialogOpen && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col">
               
               {/* Header */}
-              <div className="flex justify-between items-start p-6 border-b border-gray-100">
+              <div className="flex justify-between items-start p-6 border-b border-gray-100 flex-shrink-0">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">Edit Product</h2>
                   <p className="text-sm text-gray-500 mt-1">Update the details for the selected product.</p>
@@ -371,8 +375,8 @@ export default function ProductPage() {
                 </button>
               </div>
 
-              {/* Body */}
-              <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Body - Scrollable */}
+              <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8 overflow-y-auto flex-1">
                 
                 {/* Left Column: Form Fields */}
                 <div className="md:col-span-2 space-y-5">
@@ -477,8 +481,8 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="px-8 py-5 bg-white border-t border-gray-100 flex justify-end gap-3">
+              {/* Footer - Fixed at bottom */}
+              <div className="px-8 py-5 bg-white border-t border-gray-100 flex justify-end gap-3 flex-shrink-0">
                 <button
                   onClick={handleEditCancel}
                   className="px-6 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"

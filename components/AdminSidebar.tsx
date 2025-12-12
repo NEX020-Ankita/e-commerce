@@ -8,10 +8,9 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-64 bg-white text-black h-screen fixed left-0 top-0 z-50 overflow-y-auto border-r border-gray-200 shadow-lg">
-      <div className="p-6">
-        <h1 className="text-xl font-bold">Admin Dashboard</h1>
-      </div>
+    <div className="w-64 bg-white text-black min-h-screen flex-shrink-0 overflow-y-auto border-r border-gray-200 shadow-lg">
+    
+  
 
       <nav className="mt-6">
         <ul className="space-y-2">

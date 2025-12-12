@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import { ShoppingCart, ArrowLeft, Star } from "lucide-react";
+import { DescriptionRenderer } from "@/components/DescriptionRenderer";
 
 interface Product {
   id: number;
@@ -243,9 +244,10 @@ export default function ProductDetailPage() {
           {/* Description */}
           <div className="space-y-2">
             <p className="font-semibold">Description</p>
-            <p className="text-gray-700 leading-relaxed">
-              {product.description}
-            </p>
+            <DescriptionRenderer 
+              content={product.description} 
+              className="text-gray-700 leading-relaxed"
+            />
           </div>
 
           <div className="flex gap-4 pt-4">

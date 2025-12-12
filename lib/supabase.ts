@@ -16,7 +16,10 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 
 // Add global error handler for auth state changes
 supabase.auth.onAuthStateChange((event, session) => {
-  console.log('Auth state changed:', event, session);
+  // Only log important auth events, not token refreshes
+  if (event !== 'TOKEN_REFRESHED') {
+    console.log('Auth state changed:', event);
+  }
 });
 
 // Function to handle token refresh

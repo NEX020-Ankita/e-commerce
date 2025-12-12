@@ -44,7 +44,6 @@ export default function MyOrdersPage() {
         router.push('/phonelogin');
         return;
       }
-
       const { data, error } = await supabase
         .from('orders')
         .select('*')

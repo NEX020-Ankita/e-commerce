@@ -9,7 +9,7 @@ export default function AllUserPage() {
     <AdminAuth>
       <div className="flex">
         <AdminSidebar />
-        <div className="ml-64 flex-1">
+        <div className="">
           <AllUser />
         </div>
       </div>

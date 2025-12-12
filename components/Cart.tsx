@@ -26,10 +26,17 @@ export function Cart({ cart, updateCart }: CartProps) {
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    checkUser();
     fetchCartItems();
   }, [cart]);
+
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+  };
 
   const fetchCartItems = async () => {
     const productIds = Object.keys(cart).map(Number);
@@ -81,15 +88,21 @@ export function Cart({ cart, updateCart }: CartProps) {
 
   return (
     <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
+      <button 
+        onClick={() => {
+          if (!user) {
+            router.push('/phonelogin');
+            return;
+          }
+          setIsOpen(!isOpen);
+        }}
         className="flex items-center gap-2 px-4 py-2 text-md font-semibold text-gray-800 hover:bg-blue-100 rounded-md transition-colors"
       >
         <ShoppingCart className="h-5 w-5" />
         Cart ({totalItems})
       </button>
 
-      {isOpen && (
+      {isOpen && user && (
         <div className="absolute right-0 top-12 w-96 bg-white border rounded-lg shadow-lg z-50">
           <div className="p-4 border-b">
             <h3 className="text-lg font-semibold">Shopping Car</h3>

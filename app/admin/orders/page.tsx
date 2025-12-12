@@ -103,6 +103,25 @@ export default function OrdersPage() {
         console.error('Error updating order:', error);
         alert('Failed to update order status');
       } else {
+        // Send SMS when order is confirmed
+        if (newStatus === 'confirmed') {
+          const order = orders.find(o => o.id === orderId);
+          if (order?.delivery_address?.phone) {
+            try {
+              await fetch('/api/send-sms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  phone: `+91${order.delivery_address.phone}`,
+                  message: `Your order #${orderId} has been confirmed! Total: ₹${order.total_amount}. We'll notify you when it ships.`
+                })
+              });
+            } catch (smsError) {
+              console.error('SMS sending failed:', smsError);
+            }
+          }
+        }
+        
         fetchOrders(); // Refresh orders
         alert('Order status updated successfully');
       }

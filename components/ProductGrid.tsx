@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { supabase } from '@/lib/supabase';
-import { ShoppingCart } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { supabase } from "@/lib/supabase";
+import { ShoppingCart } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Product {
   id: number;
@@ -19,11 +19,16 @@ interface Product {
 interface ProductGridProps {
   categoryFilter?: string | null;
   searchTerm?: string;
-  cart: {[key: number]: number};
+  cart: { [key: number]: number };
   updateCart: (productId: number, quantity: number) => void;
 }
 
-export function ProductGrid({ categoryFilter, searchTerm, cart, updateCart }: ProductGridProps) {
+export function ProductGrid({
+  categoryFilter,
+  searchTerm,
+  cart,
+  updateCart,
+}: ProductGridProps) {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -34,48 +39,44 @@ export function ProductGrid({ categoryFilter, searchTerm, cart, updateCart }: Pr
 
   useEffect(() => {
     let filtered = products;
-    
+
     if (categoryFilter) {
-      filtered = filtered.filter(product => product.category === categoryFilter);
-    }
-    
-    if (searchTerm) {
-      filtered = filtered.filter(product => 
-        product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (product) => product.category === categoryFilter
       );
     }
-    
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (product) =>
+          product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
     setFilteredProducts(filtered);
   }, [categoryFilter, searchTerm, products]);
 
   const fetchProducts = async () => {
     try {
       const { data, error } = await supabase
-        .from('product')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
+        .from("product")
+        .select("*")
+        .order("created_at", { ascending: false });
+
       if (error) {
-        if (typeof window !== 'undefined') {
-          console.error('Error fetching products:', error);
-        }
+        console.error("Error fetching products:", error);
       } else {
         setProducts(data || []);
         setFilteredProducts(data || []);
       }
     } catch (error) {
-      if (typeof window !== 'undefined') {
-        console.error('Error:', error);
-      }
+      console.error("Error:", error);
     }
   };
 
   const addToCart = (productId: number) => {
-    const currentCart = JSON.parse(localStorage.getItem('cart') || '{}');
-    const newQuantity = (currentCart[productId] || 0) + 1;
-    currentCart[productId] = newQuantity;
-    localStorage.setItem('cart', JSON.stringify(currentCart));
+    const newQuantity = (cart[productId] || 0) + 1;
     updateCart(productId, newQuantity);
   };
 
@@ -87,72 +88,92 @@ export function ProductGrid({ categoryFilter, searchTerm, cart, updateCart }: Pr
 
   if (products.length === 0) {
     return (
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-10">All Products</h2>
-          <div className="text-center py-8">
-            <p className="text-gray-500">No products available. Add products from the admin panel.</p>
-          </div>
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-6 text-gray-800">
+            All Products
+          </h2>
+          <p className="text-gray-500">
+            No products available. Add products from the admin panel.
+          </p>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="py-12 bg-gray-50">
+    <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-10">
-          {searchTerm ? `Search Results for "${searchTerm}"` : categoryFilter ? `${categoryFilter} Products` : 'All Products'}
+        <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 tracking-tight">
+          {searchTerm
+            ? `Search Results for "${searchTerm}"`
+            : categoryFilter
+            ? `${categoryFilter} Products`
+            : "All Products"}
         </h2>
+
         {filteredProducts.length === 0 && (categoryFilter || searchTerm) && (
-          <div className="text-center py-8">
-            <p className="text-gray-500">
-              {searchTerm ? `No products found for "${searchTerm}"` : `No products found in ${categoryFilter} category.`}
+          <div className="text-center py-10">
+            <p className="text-gray-500 text-lg">
+              {searchTerm
+                ? `No products found for "${searchTerm}"`
+                : `No products found in ${categoryFilter} category.`}
             </p>
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {filteredProducts.map((product) => (
-            <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden group hover:shadow-lg transition-shadow">
-              <div 
-                className="relative cursor-pointer"
+            <div
+              key={product.id}
+              className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+            >
+              <div
+                className="relative cursor-pointer overflow-hidden"
                 onClick={() => handleProductClick(product.id)}
               >
                 <Image
                   src={
-                    Array.isArray(product.image_urls) && product.image_urls.length > 0
+                    Array.isArray(product.image_urls) &&
+                    product.image_urls.length > 0
                       ? product.image_urls[0]
-                      : '/lan.webp'
+                      : "/lan.webp"
                   }
                   alt={product.title}
                   width={300}
                   height={200}
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-110"
                 />
               </div>
-              <div className="p-4">
-                <h3 
-                  className="text-lg font-semibold text-gray-800 mb-2 cursor-pointer hover:text-blue-600"
+
+              <div className="p-5">
+                <h3
+                  className="text-lg font-semibold text-gray-900 tracking-tight mb-2 cursor-pointer hover:text-blue-600 transition-colors"
                   onClick={() => handleProductClick(product.id)}
                 >
                   {product.title}
                 </h3>
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                  {product.description}
+
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+                  {product.description.replace(/<[^>]*>/g, '')}
                 </p>
+
                 <div className="flex items-center justify-between">
-                  <span className="text-xl font-bold text-blue-600">₹{product.price}</span>
-                  <button 
+                  <span className="text-xl font-bold text-blue-600">
+                    ₹{product.price}
+                  </span>
+
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       addToCart(product.id);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg shadow hover:bg-blue-700 active:scale-95 transition-all"
                   >
                     <ShoppingCart className="h-4 w-4" />
-                    Add to Cart
+                    Add
                     {getCartCount(product.id) > 0 && (
-                      <span className="bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                      <span className="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs shadow">
                         {getCartCount(product.id)}
                       </span>
                     )}

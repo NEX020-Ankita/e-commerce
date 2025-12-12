@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Trash2, CheckCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import Script from "next/script";
 
 // Define the exact shape of your Supabase table
 interface Address {
@@ -24,7 +25,7 @@ interface Address {
 
 function CheckoutContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -33,7 +34,8 @@ function CheckoutContent() {
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [placingOrder, setPlacingOrder] = useState(false);
-
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -118,7 +120,7 @@ function CheckoutContent() {
     }
   };
 
-  const handlePlaceOrder = async () => {
+  const handlePayNowClick = () => {
     if (!selectedAddress) {
       alert("Please select a delivery address");
       return;
@@ -129,12 +131,18 @@ function CheckoutContent() {
       return;
     }
 
+    setShowPaymentOptions(true);
+  };
+
+  const handlePlaceOrder = async (paymentMethod: 'online' | 'cod') => {
     setPlacingOrder(true);
+    setShowPaymentOptions(false);
 
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+      
       if (!user) {
         router.push("/login");
         return;
@@ -144,30 +152,69 @@ function CheckoutContent() {
         (addr) => addr.id === selectedAddress
       );
 
-      if (!selectedAddr) {
-        alert("Selected address not found. Please try again.");
-        return;
+      if (paymentMethod === 'online') {
+        // Create Razorpay order for online payment
+        const orderResponse = await fetch('/api/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: totalAmount })
+        });
+        
+        const { orderId } = await orderResponse.json();
+
+        const options = {
+          key: 'rzp_test_Rl2o3XkmnvDNf3',
+          amount: totalAmount * 100,
+          currency: 'INR',
+          name: 'Ecommerce Store',
+          description: 'Order Payment',
+          order_id: orderId,
+          handler: async (response: any) => {
+            // Payment successful, save order to database
+            const { error } = await supabase.from("orders").insert({
+              user_id: user.id,
+              items: cartItems,
+              total_amount: totalAmount,
+              delivery_address: selectedAddr,
+              status: "pending",
+              order_date: new Date().toISOString(),
+              payment_id: response.razorpay_payment_id,
+              payment_method: 'online'
+            });
+
+            if (error) throw error;
+
+            localStorage.removeItem("cart");
+            alert("Payment successful! Order placed.");
+            router.push("/");
+          },
+          prefill: {
+            name: selectedAddr?.name || '',
+            contact: selectedAddr?.phone || ''
+          },
+          theme: { color: '#3399cc' }
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      } else {
+        // Cash on Delivery - directly save order
+        const { error } = await supabase.from("orders").insert({
+          user_id: user.id,
+          items: cartItems,
+          total_amount: totalAmount,
+          delivery_address: selectedAddr,
+          status: "pending",
+          order_date: new Date().toISOString(),
+          payment_method: 'cod'
+        });
+
+        if (error) throw error;
+
+        localStorage.removeItem("cart");
+        alert("Order placed successfully! Pay cash on delivery.");
+        router.push("/");
       }
-
-      console.log('Placing order with address:', selectedAddr);
-      console.log('Cart items being saved:', cartItems);
-
-      const { error } = await supabase.from("orders").insert({
-        user_id: user.id,
-        items: cartItems,
-        total_amount: totalAmount,
-        delivery_address: selectedAddr,
-        status: "pending",
-        order_date: new Date().toISOString(),
-      });
-
-      if (error) throw error;
-
-      // Clear cart
-      localStorage.removeItem("cart");
-
-      alert("Order placed successfully! Admin will confirm your order soon.");
-      router.push("/");
     } catch (error) {
       console.error("Error placing order:", error);
       alert("Failed to place order. Please try again.");
@@ -194,7 +241,8 @@ function CheckoutContent() {
       console.error("Error deleting:", error);
     }
   };
-
+  //2.1 delete end
+  
   // 3. Submit New Address
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -247,6 +295,7 @@ function CheckoutContent() {
     <div className="container mx-auto px-4 py-8">
       <Button variant="ghost" onClick={() => router.back()} className="mb-6">
         <ArrowLeft className="mr-2 h-4 w-4" /> Back
+
       </Button>
 
       <h1 className="text-3xl font-bold mb-8">Checkout</h1>
@@ -455,7 +504,9 @@ function CheckoutContent() {
                     >
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={saving}>
+                      <Button
+                       
+                        type="submit" disabled={saving}>
                       {saving ? "Saving..." : "Save Address"}
                     </Button>
                   </div>
@@ -490,15 +541,67 @@ function CheckoutContent() {
               </div>
 
               <Button
-                onClick={handlePlaceOrder}
+                onClick={handlePayNowClick}
                 className="w-full bg-green-600 hover:bg-green-700"
                 size="lg"
                 disabled={
                   !selectedAddress || placingOrder || cartItems.length === 0
                 }
               >
-                {placingOrder ? "Placing Order..." : "Place Order"}
+                {placingOrder ? "Processing..." : "Pay Now"}
               </Button>
+
+              {/* Payment Method Selection Modal */}
+              {showPaymentOptions && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+                    <h3 className="text-lg font-semibold mb-4">Choose Payment Method</h3>
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => handlePlaceOrder('online')}
+                        className="w-full p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors text-left"
+                        disabled={placingOrder}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-5 h-5 rounded-full border-2 border-blue-600 flex items-center justify-center">
+                            <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                          </div>
+                          <div>
+                            <div className="font-medium">Pay Online</div>
+                            <div className="text-sm text-gray-500">Credit/Debit Card, UPI, Net Banking</div>
+                          </div>
+                        </div>
+                      </button>
+                      
+                      <button
+                        onClick={() => handlePlaceOrder('cod')}
+                        className="w-full p-4 border rounded-lg hover:bg-green-50 hover:border-green-300 transition-colors text-left"
+                        disabled={placingOrder}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-5 h-5 rounded-full border-2 border-green-600 flex items-center justify-center">
+                            <div className="w-3 h-3 rounded-full bg-green-600"></div>
+                          </div>
+                          <div>
+                            <div className="font-medium">Cash on Delivery</div>
+                            <div className="text-sm text-gray-500">Pay when your order arrives</div>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                    
+                    <div className="flex justify-end mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowPaymentOptions(false)}
+                        disabled={placingOrder}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {!selectedAddress && (
                 <p className="text-xs text-red-500 text-center">
@@ -515,8 +618,11 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="container mx-auto px-4 py-8">Loading checkout...</div>}>
-      <CheckoutContent />
-    </Suspense>
+    <>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+      <Suspense fallback={<div className="container mx-auto px-4 py-8">Loading checkout...</div>}>
+        <CheckoutContent />
+      </Suspense>
+    </>
   );
 }
