@@ -13,6 +13,7 @@ interface Product {
   price: number;
   category: string;
   image_urls?: string[];
+  offer_percentage?: number;
   created_at: string;
 }
 
@@ -29,6 +30,7 @@ export function ProductCategory() {
     description: "",
     price: "",
     category: "",
+    offer_percentage: "",
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -36,6 +38,7 @@ export function ProductCategory() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [expandedDesc, setExpandedDesc] = useState<number | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -167,6 +170,7 @@ export function ProductCategory() {
         description: formData.description,
         price: parseFloat(formData.price),
         category: formData.category,
+        offer_percentage: formData.offer_percentage ? parseFloat(formData.offer_percentage) : null,
         ...(imageUrls.length > 0 && {
           image_urls: imageUrls,
         }),
@@ -190,7 +194,7 @@ export function ProductCategory() {
         console.error("Error saving product:", error);
         alert("Error saving product");
       } else {
-        setFormData({ title: "", description: "", price: "", category: "" });
+        setFormData({ title: "", description: "", price: "", category: "", offer_percentage: "" });
         setSelectedFiles([]);
         setImagePreviews([]);
         setEditingId(null);
@@ -210,6 +214,7 @@ export function ProductCategory() {
       description: product.description,
       price: product.price.toString(),
       category: product.category,
+      offer_percentage: product.offer_percentage?.toString() || "",
     });
     const urls = Array.isArray(product.image_urls) ? product.image_urls : [];
     setImagePreviews(urls.filter(Boolean));
@@ -251,7 +256,7 @@ export function ProductCategory() {
   };
 
   const handleCancel = () => {
-    setFormData({ title: "", description: "", price: "", category: "" });
+    setFormData({ title: "", description: "", price: "", category: "", offer_percentage: "" });
     setSelectedFiles([]);
     setImagePreviews([]);
     setEditingId(null);
@@ -329,7 +334,7 @@ export function ProductCategory() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
               <input
@@ -342,6 +347,21 @@ export function ProductCategory() {
                 step="0.01"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Offer (%)</label>
+              <input
+                type="number"
+                name="offer_percentage"
+                value={formData.offer_percentage}
+                onChange={handleInputChange}
+                placeholder="Enter offer percentage"
+                min="0"
+                max="100"
+                step="1"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               />
             </div>
 
@@ -413,6 +433,9 @@ export function ProductCategory() {
                     Price
                   </th>
                   <th className="border border-gray-300 px-4 py-2 text-left">
+                    Offer
+                  </th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">
                     Created
                   </th>
                   <th className="border border-gray-300 px-4 py-2 text-left">
@@ -438,15 +461,58 @@ export function ProductCategory() {
                       {product.title}
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
-                      <div className="max-w-xs truncate">
-                        {product.description.replace(/<[^>]*>/g, '').substring(0, 50)}...
+                      <div className="max-w-xs">
+                        {expandedDesc === product.id ? (
+                          <div>
+                            <div className="whitespace-pre-wrap">
+                              {product.description.replace(/<[^>]*>/g, '')}
+                            </div>
+                            <button
+                              onClick={() => setExpandedDesc(null)}
+                              className="text-blue-600 hover:underline text-sm mt-1"
+                            >
+                              Show less
+                            </button>
+                          </div>
+                        ) : (
+                          <div>
+                            <span className="truncate block">
+                              {product.description.replace(/<[^>]*>/g, '').substring(0, 50)}
+                            </span>
+                            <button
+                              onClick={() => setExpandedDesc(product.id)}
+                              className="text-blue-600 hover:underline text-sm"
+                            >
+                              ...more
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
                       {product.category}
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
-                      ₹{product.price}
+                      {product.offer_percentage ? (
+                        <div>
+                          <span className="line-through text-gray-500">₹{product.price}</span>
+                          <br />
+                          <span className="text-green-600 font-semibold">
+                            ₹{(product.price * (1 - product.offer_percentage / 100)).toFixed(2)}
+                          </span>
+                        </div>
+                      ) : (
+                        <span>₹{product.price}</span>
+                      )}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      {product.offer_percentage ? (
+                        <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">
+                          {product.offer_percentage}% OFF
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">No offer</span>
+                      )}
                     </td>
                     <td className="border border-gray-300 px-4 py-2 text-sm text-gray-600">
                       {new Date(product.created_at).toLocaleDateString()}

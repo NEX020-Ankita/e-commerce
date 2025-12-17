@@ -5,6 +5,7 @@ import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import products from "razorpay/dist/types/products";
 
 interface Product {
   id: number;
@@ -30,41 +31,43 @@ export function Cart({ cart, updateCart }: CartProps) {
 
   useEffect(() => {
     checkUser();
-    fetchCartItems();
-  }, [cart]);
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchCartItems();
+    }
+  }, [user]);
 
   const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     setUser(user);
   };
 
   const fetchCartItems = async () => {
-    const productIds = Object.keys(cart).map(Number);
-    if (productIds.length === 0) {
+    if (!user) {
       setCartItems([]);
       return;
     }
 
     try {
       const { data, error } = await supabase
-        .from("product")
-        .select("id, title, price, image_urls")
-        .in("id", productIds);
+        .from("cart")
+        .select('*')
+        .eq('user_id', user.id);
 
       if (error) {
         console.error("Error fetching cart items:", error);
       } else {
-        const items =
-          data?.map((product) => {
-            console.log("Product image_urls:", product.image_urls);
-            return {
-              ...product,
-              image_url: Array.isArray(product.image_urls)
-                ? product.image_urls[0]
-                : product.image_urls,
-              quantity: cart[product.id],
-            };
-          }) || [];
+        const items = data?.map((cartItem) => ({
+          id: cartItem.product_id,
+          title: cartItem.title,
+          price: cartItem.price,
+          image_urls: cartItem.image_urls,
+          quantity: cartItem.quantity
+        })) || [];
         setCartItems(items);
       }
     } catch (error) {
@@ -72,26 +75,45 @@ export function Cart({ cart, updateCart }: CartProps) {
     }
   };
 
-  const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
 
-  const updateQuantity = (productId: number, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      updateCart(productId, 0);
-    } else {
-      updateCart(productId, newQuantity);
+  const updateQuantity = async (productId: number, newQuantity: number) => {
+    if (!user) return;
+
+    try {
+      if (newQuantity <= 0) {
+        // Remove item
+        await supabase
+          .from('cart')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('product_id', productId);
+      } else {
+        // Update quantity
+        await supabase
+          .from('cart')
+          .update({ quantity: newQuantity })
+          .eq('user_id', user.id)
+          .eq('product_id', productId);
+      }
+      
+      // Refresh cart items
+      fetchCartItems();
+    } catch (error) {
+      console.error('Error updating quantity:', error);
     }
   };
 
   return (
     <div className="relative">
-      <button 
+      <button
         onClick={() => {
           if (!user) {
-            router.push('/phonelogin');
+            router.push("/phonelogin");
             return;
           }
           setIsOpen(!isOpen);
@@ -121,7 +143,12 @@ export function Cart({ cart, updateCart }: CartProps) {
                     className="p-4 border-b flex items-center gap-3"
                   >
                     <Image
-                      src={Array.isArray(item.image_urls) && item.image_urls.length > 0 ? item.image_urls[0] : "/lan.webp"}
+                      src={
+                        Array.isArray(item.image_urls) &&
+                        item.image_urls.length > 0
+                          ? item.image_urls[0]
+                          : "/lan.webp"
+                      }
                       alt={item.title}
                       width={50}
                       height={50}
@@ -152,7 +179,7 @@ export function Cart({ cart, updateCart }: CartProps) {
                         <Plus className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => updateCart(item.id, 0)}
+                        onClick={() => updateQuantity(item.id, 0)}
                         className="p-1 hover:bg-gray-100 rounded text-red-500"
                       >
                         <Trash2 className="h-4 w-4" />

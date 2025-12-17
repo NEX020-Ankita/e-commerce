@@ -37,6 +37,7 @@ export default function ProductPage() {
   const [editForm, setEditForm] = useState<Partial<Product>>({});
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [expandedDesc, setExpandedDesc] = useState<number | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -274,8 +275,32 @@ export default function ProductPage() {
                         {product.title}
                       </TableCell>
                       <TableCell>
-                        <div className="max-w-xs truncate">
-                          {product.description.replace(/<[^>]*>/g, '').substring(0, 50)}...
+                        <div className="max-w-xs">
+                          {expandedDesc === product.id ? (
+                            <div>
+                              <div className="whitespace-pre-wrap">
+                                {product.description.replace(/<[^>]*>/g, '')}
+                              </div>
+                              <button
+                                onClick={() => setExpandedDesc(null)}
+                                className="text-blue-600 hover:underline text-sm mt-1"
+                              >
+                                Show less
+                              </button>
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="truncate block">
+                                {product.description.replace(/<[^>]*>/g, '').substring(0, 50)}
+                              </span>
+                              <button
+                                onClick={() => setExpandedDesc(product.id)}
+                                className="text-blue-600 hover:underline text-sm"
+                              >
+                                ...more
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>{product.category}</TableCell>

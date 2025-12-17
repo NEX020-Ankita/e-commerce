@@ -88,26 +88,27 @@ function CheckoutContent() {
 
   const loadCartItems = async () => {
     try {
-      const cartData = localStorage.getItem("cart");
-      if (!cartData) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        router.push('/phonelogin');
+        return;
+      }
 
-      const cart = JSON.parse(cartData);
-      const productIds = Object.keys(cart).map(Number);
-
-      if (productIds.length === 0) return;
-
-      const { data: products, error } = await supabase
-        .from("product")
-        .select("*")
-        .in("id", productIds);
+      const { data: cartItems, error } = await supabase
+        .from('cart')
+        .select('*')
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
-      const items =
-        products?.map((product) => ({
-          ...product,
-          quantity: cart[product.id] || 0,
-        })) || [];
+      const items = cartItems?.map((cartItem) => ({
+        id: cartItem.product_id,
+        title: cartItem.title,
+        price: cartItem.price,
+        image_urls: cartItem.image_urls,
+        quantity: cartItem.quantity
+      })) || [];
 
       setCartItems(items);
       const total = items.reduce(
@@ -184,7 +185,8 @@ function CheckoutContent() {
 
             if (error) throw error;
 
-            localStorage.removeItem("cart");
+            // Clear cart from Supabase
+            await supabase.from('cart').delete().eq('user_id', user.id);
             alert("Payment successful! Order placed.");
             router.push("/");
           },
@@ -211,7 +213,8 @@ function CheckoutContent() {
 
         if (error) throw error;
 
-        localStorage.removeItem("cart");
+        // Clear cart from Supabase
+        await supabase.from('cart').delete().eq('user_id', user.id);
         alert("Order placed successfully! Pay cash on delivery.");
         router.push("/");
       }

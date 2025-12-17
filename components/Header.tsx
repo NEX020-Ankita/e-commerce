@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, User, Store, MoreVertical, LogOut, ChevronDown } from "lucide-react";
+import { Search, User, Store, MoreVertical, LogOut, ChevronDown, Menu, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -23,6 +23,8 @@ export function Header({
   const [user, setUser] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -54,15 +56,15 @@ export function Header({
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-200">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
-          <div className="flex-shrink-0 mr-6">
+          <div className="flex-shrink-0">
             <a href="#" className="block">
-              <h1 className="text-2xl font-extrabold italic text-blue-600">
+              <h1 className="text-lg sm:text-2xl font-extrabold italic text-blue-600">
                 Flipkart
               </h1>
-              <p className="text-xs font-semibold text-gray-500 -mt-1 flex items-center">
+              <p className="hidden sm:block text-xs font-semibold text-gray-500 -mt-1 flex items-center">
                 Explore
                 <span className="ml-1 text-yellow-500 font-bold">
                   Plus
@@ -72,8 +74,8 @@ export function Header({
             </a>
           </div>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-xl relative">
+          {/* Desktop Search Bar */}
+          <div className="hidden md:flex flex-1 max-w-xl mx-6 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               type="search"
@@ -84,17 +86,38 @@ export function Header({
             />
           </div>
 
-          {/* Navigation Links */}
-          <div className="hidden lg:flex items-center space-x-8 ml-8">
+          {/* Mobile Icons */}
+          <div className="flex items-center space-x-2 md:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowMobileSearch(!showMobileSearch)}
+              className="text-gray-800 hover:bg-blue-100"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+            <Cart cart={cart} updateCart={updateCart} />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="text-gray-800 hover:bg-blue-100"
+            >
+              {showMobileMenu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4 lg:space-x-8">
             {user ? (
               <div className="relative">
                 <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="flex items-center text-md font-semibold text-gray-800 hover:bg-blue-100 px-4 py-2 rounded-md transition-colors"
+                  className="flex items-center text-sm lg:text-md font-semibold text-gray-800 hover:bg-blue-100 px-2 lg:px-4 py-2 rounded-md transition-colors"
                 >
-                  <User className="mr-2 h-5 w-5" />
-                  My Profile
-                  <ChevronDown className="ml-1 h-4 w-4" />
+                  <User className="mr-1 lg:mr-2 h-4 w-4 lg:h-5 lg:w-5" />
+                  <span className="hidden lg:inline">My Profile</span>
+                  <ChevronDown className="ml-1 h-3 w-3 lg:h-4 lg:w-4" />
                 </button>
                 
                 {showProfileDropdown && (
@@ -124,10 +147,10 @@ export function Header({
             ) : (
               <button
                 onClick={handleLoginClick}
-                className="flex items-center text-md font-semibold text-gray-800 hover:bg-blue-100 px-4 py-2 rounded-md transition-colors"
+                className="flex items-center text-sm lg:text-md font-semibold text-gray-800 hover:bg-blue-100 px-2 lg:px-4 py-2 rounded-md transition-colors"
               >
-                <User className="mr-2 h-5 w-5" />
-                Login
+                <User className="mr-1 lg:mr-2 h-4 w-4 lg:h-5 lg:w-5" />
+                <span className="hidden lg:inline">Login</span>
               </button>
             )}
 
@@ -135,17 +158,80 @@ export function Header({
 
             <a
               href="/main/contact"
-              className="flex items-center text-md font-semibold text-gray-800 hover:bg-blue-100 px-4 py-2 rounded-md transition-colors"
+              className="flex items-center text-sm lg:text-md font-semibold text-gray-800 hover:bg-blue-100 px-2 lg:px-4 py-2 rounded-md transition-colors"
             >
-              <Store className="mr-2 h-5 w-5" />
-              contact
+              <Store className="mr-1 lg:mr-2 h-4 w-4 lg:h-5 lg:w-5" />
+              <span className="hidden lg:inline">Contact</span>
             </a>
-
-            <Button variant="ghost" size="icon" className="text-gray-800 hover:bg-blue-100">
-              <MoreVertical className="h-5 w-5" />
-            </Button>
           </div>
         </div>
+
+        {/* Mobile Search Bar */}
+        {showMobileSearch && (
+          <div className="md:hidden py-3 border-t">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="search"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="w-full pl-10 pr-4 py-2 bg-blue-50/50 border-none focus-visible:ring-blue-500 focus-visible:ring-2 rounded-lg h-9"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Menu */}
+        {showMobileMenu && (
+          <div className="md:hidden py-3 border-t bg-white">
+            <div className="space-y-2">
+              {user ? (
+                <>
+                  <button
+                    onClick={() => {
+                      router.push('/user/orders');
+                      setShowMobileMenu(false);
+                    }}
+                    className="flex items-center w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg"
+                  >
+                    <User className="mr-3 h-5 w-5" />
+                    My Orders
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleLogoutClick();
+                      setShowMobileMenu(false);
+                    }}
+                    className="flex items-center w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg"
+                  >
+                    <LogOut className="mr-3 h-5 w-5" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    handleLoginClick();
+                    setShowMobileMenu(false);
+                  }}
+                  className="flex items-center w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg"
+                >
+                  <User className="mr-3 h-5 w-5" />
+                  Login
+                </button>
+              )}
+              <a
+                href="/main/contact"
+                onClick={() => setShowMobileMenu(false)}
+                className="flex items-center w-full px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg"
+              >
+                <Store className="mr-3 h-5 w-5" />
+                Contact
+              </a>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

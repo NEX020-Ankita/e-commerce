@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+  key_id: process.env.RAZORPAY_KEY_ID || 'dummy_key_id',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_key_secret',
 });
 
 export async function POST(request: NextRequest) {
   try {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      return NextResponse.json({ error: 'Razorpay configuration missing' }, { status: 500 });
+    }
+
     const { amount } = await request.json();
 
     const order = await razorpay.orders.create({

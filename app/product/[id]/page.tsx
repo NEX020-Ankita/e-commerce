@@ -14,6 +14,7 @@ interface Product {
   price: number;
   category: string;
   image_urls?: string[];
+  offer_percentage?: number;
   rating: number;
   created_at: string;
 }
@@ -30,6 +31,7 @@ export default function ProductDetailPage() {
   const [hoverRating, setHoverRating] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
   const [totalRatings, setTotalRatings] = useState(0);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // 🚀 FIXED: Buy Now Handler
   const handleBuyNow = () => {
@@ -200,7 +202,21 @@ export default function ProductDetailPage() {
           <h1 className="text-3xl font-bold">{product.title}</h1>
 
           <div className="flex items-center gap-4">
-            <span className="font-semibold text-2xl">₹{product.price}</span>
+            {product.offer_percentage ? (
+              <div className="flex flex-col gap-1">
+                <span className="text-lg text-gray-500 line-through">
+                  ₹{product.price}
+                </span>
+                <span className="font-bold text-3xl text-green-600">
+                  ₹{(product.price * (1 - product.offer_percentage / 100)).toFixed(2)}
+                </span>
+                <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium w-fit">
+                  {product.offer_percentage}% OFF
+                </span>
+              </div>
+            ) : (
+              <span className="font-semibold text-2xl">₹{product.price}</span>
+            )}
           </div>
 
           {/* Rating */}
@@ -244,14 +260,94 @@ export default function ProductDetailPage() {
           {/* Description */}
           <div className="space-y-2">
             <p className="font-semibold">Description</p>
-            <DescriptionRenderer 
-              content={product.description} 
-              className="text-gray-700 leading-relaxed"
-            />
+            <div className="text-gray-700 leading-relaxed">
+              {isDescriptionExpanded ? (
+                <div>
+                  <DescriptionRenderer content={product.description} />
+                  <button
+                    onClick={() => setIsDescriptionExpanded(false)}
+                    className="text-blue-600 hover:underline text-sm mt-2 font-medium"
+                  >
+                    Show less
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div className="line-clamp-3">
+                    {product.description.replace(/<[^>]*>/g, '').substring(0, 150)}
+                  </div>
+                  {product.description.replace(/<[^>]*>/g, '').length > 150 && (
+                    <button
+                      onClick={() => setIsDescriptionExpanded(true)}
+                      className="text-blue-600 hover:underline text-sm mt-1 font-medium"
+                    >
+                      ...more
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-4 pt-4">
-            <button className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700">
+            <button 
+              onClick={async () => {
+                try {
+                  const { data: { user } } = await supabase.auth.getUser();
+                  
+                  if (!user) {
+                    alert('Please login to add items to cart');
+                    return;
+                  }
+
+                  // Check if item exists in cart
+                  const { data: existingItem } = await supabase
+                    .from('cart')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .eq('product_id', product.id)
+                    .maybeSingle();
+
+                  if (existingItem) {
+                    // Update quantity
+                    const { error } = await supabase
+                      .from('cart')
+                      .update({ quantity: existingItem.quantity + 1 })
+                      .eq('id', existingItem.id);
+                    
+                    if (error) {
+                      console.error('Error updating cart:', error);
+                      alert('Failed to update cart');
+                      return;
+                    }
+                  } else {
+                    // Insert new item with product details
+                    const { error } = await supabase
+                      .from('cart')
+                      .insert({ 
+                        user_id: user.id, 
+                        product_id: product.id, 
+                        quantity: 1,
+                        title: product.title,
+                        price: product.price,
+                        image_urls: product.image_urls
+                      });
+                    
+                    if (error) {
+                      console.error('Error adding to cart:', error);
+                      alert('Failed to add to cart');
+                      return;
+                    }
+                  }
+
+                  alert('Added to cart successfully!');
+                } catch (error) {
+                  console.error('Error:', error);
+                  alert('Failed to add to cart');
+                }
+              }}
+              className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700"
+            >
               <ShoppingCart className="h-5 w-5" />
               Add to Cart
             </button>

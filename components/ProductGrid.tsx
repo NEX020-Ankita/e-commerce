@@ -13,6 +13,7 @@ interface Product {
   price: number;
   category: string;
   image_urls?: string[];
+  offer_percentage?: number;
   created_at: string;
 }
 
@@ -75,9 +76,66 @@ export function ProductGrid({
     }
   };
 
-  const addToCart = (productId: number) => {
-    const newQuantity = (cart[productId] || 0) + 1;
-    updateCart(productId, newQuantity);
+  const addToCart = async (productId: number) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        alert('Please login to add items to cart');
+        return;
+      }
+
+      // Check if item exists in cart
+      const { data: existingItem } = await supabase
+        .from('cart')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('product_id', productId)
+        .maybeSingle();
+
+      // Get product details
+      const { data: productData } = await supabase
+        .from('product')
+        .select('title, price, image_urls')
+        .eq('id', productId)
+        .single();
+
+      if (existingItem) {
+        // Update quantity
+        const { error } = await supabase
+          .from('cart')
+          .update({ quantity: existingItem.quantity + 1 })
+          .eq('id', existingItem.id);
+        
+        if (error) {
+          console.error('Error updating cart:', error);
+          return;
+        }
+      } else {
+        // Insert new item with product details
+        const { error } = await supabase
+          .from('cart')
+          .insert({ 
+            user_id: user.id, 
+            product_id: productId, 
+            quantity: 1,
+            title: productData?.title,
+            price: productData?.price,
+            image_urls: productData?.image_urls
+          });
+        
+        if (error) {
+          console.error('Error adding to cart:', error);
+          return;
+        }
+      }
+
+      // Update local cart state
+      const newQuantity = (cart[productId] || 0) + 1;
+      updateCart(productId, newQuantity);
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   const getCartCount = (productId: number) => (cart && cart[productId]) || 0;
@@ -88,7 +146,7 @@ export function ProductGrid({
 
   if (products.length === 0) {
     return (
-      <section className="py-16 bg-gray-50">
+      <section className="">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6 text-gray-800">
             All Products
@@ -102,9 +160,9 @@ export function ProductGrid({
   }
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className=" bg-gray-50">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12 text-gray-800 tracking-tight px-4">
           {searchTerm
             ? `Search Results for "${searchTerm}"`
             : categoryFilter
@@ -113,8 +171,8 @@ export function ProductGrid({
         </h2>
 
         {filteredProducts.length === 0 && (categoryFilter || searchTerm) && (
-          <div className="text-center py-10">
-            <p className="text-gray-500 text-lg">
+          <div className="text-center py-8 sm:py-10 px-4">
+            <p className="text-gray-500 text-base sm:text-lg">
               {searchTerm
                 ? `No products found for "${searchTerm}"`
                 : `No products found in ${categoryFilter} category.`}
@@ -122,7 +180,7 @@ export function ProductGrid({
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {filteredProducts.map((product) => (
             <div
               key={product.id}
@@ -142,36 +200,53 @@ export function ProductGrid({
                   alt={product.title}
                   width={300}
                   height={200}
-                  className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="w-full h-48 sm:h-52 lg:h-56 object-cover transition-transform duration-500 group-hover:scale-110"
                 />
               </div>
 
-              <div className="p-5">
+              <div className="p-4 sm:p-5">
                 <h3
-                  className="text-lg font-semibold text-gray-900 tracking-tight mb-2 cursor-pointer hover:text-blue-600 transition-colors"
+                  className="text-base sm:text-lg font-semibold text-gray-900 tracking-tight mb-2 cursor-pointer hover:text-blue-600 transition-colors line-clamp-2"
                   onClick={() => handleProductClick(product.id)}
                 >
                   {product.title}
                 </h3>
 
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 line-clamp-2 leading-relaxed">
                   {product.description.replace(/<[^>]*>/g, '')}
                 </p>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-xl font-bold text-blue-600">
-                    ₹{product.price}
-                  </span>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+                  <div className="flex flex-col">
+                    {product.offer_percentage ? (
+                      <>
+                        <span className="text-xs sm:text-sm text-gray-500 line-through">
+                          ₹{product.price}
+                        </span>
+                        <span className="text-lg sm:text-xl font-bold text-green-600">
+                          ₹{(product.price * (1 - product.offer_percentage / 100)).toFixed(2)}
+                        </span>
+                        <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded font-medium w-fit">
+                          {product.offer_percentage}% OFF
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-lg sm:text-xl font-bold text-blue-600">
+                        ₹{product.price}
+                      </span>
+                    )}
+                  </div>
 
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       addToCart(product.id);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg shadow hover:bg-blue-700 active:scale-95 transition-all"
+                    className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg shadow hover:bg-blue-700 active:scale-95 transition-all w-full sm:w-auto"
                   >
-                    <ShoppingCart className="h-4 w-4" />
-                    Add
+                    <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Add</span>
+                    <span className="sm:hidden">Add to Cart</span>
                     {getCartCount(product.id) > 0 && (
                       <span className="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs shadow">
                         {getCartCount(product.id)}

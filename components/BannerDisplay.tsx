@@ -75,7 +75,7 @@ export function BannerDisplay() {
   }
 
   return (
-    <div className="relative w-full h-80 rounded-lg overflow-hidden shadow-xl">
+    <div className="relative w-full h-60 rounded-lg overflow-hidden shadow-xl">
       {/* Sliding Container */}
       <div 
         className="flex transition-transform duration-500 ease-in-out h-full"
@@ -84,7 +84,7 @@ export function BannerDisplay() {
         {banners.map((banner, index) => (
           <div 
             key={banner.id}
-            className="min-w-full h-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 flex items-center justify-between px-8"
+            className="min-w-full  bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 flex items-center justify-between px-8"
           >
             <div className="flex-1 text-white space-y-4">
               <h2 className="text-4xl font-bold leading-tight">{banner.title}</h2>
