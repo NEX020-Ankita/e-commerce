@@ -1,18 +1,15 @@
 "use client";
 
-import AdminSidebar from "@/components/AdminSidebar";
 import AllUser from "@/components/AllUser";
 import AdminAuth from "@/components/AdminAuth";
+import AdminLayout from "@/components/AdminLayout";
 
 export default function AllUserPage() {
   return (
     <AdminAuth>
-      <div className="flex ">
-        <AdminSidebar />
-        <div className=" w-full">
-          <AllUser />
-        </div>
-      </div>
+      <AdminLayout>
+        <AllUser />
+      </AdminLayout>
     </AdminAuth>
   );
 }

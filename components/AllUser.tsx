@@ -40,26 +40,26 @@ export default function AllUser() {
      
 
   return (
-    <div className="h-screen flex flex-col p-6">
-      <h1 className="text-3xl font-bold mb-6">All Users</h1>
+    <div className="min-h-screen flex flex-col p-2 sm:p-4 lg:p-6">
+      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 lg:mb-6">All Users</h1>
       <div className="flex-1 border rounded-lg overflow-hidden">
-        <div className="h-full w-fulloverflow-auto">
+        <div className="h-full w-full overflow-auto">
           <Table>
             <TableHeader className="sticky top-0 bg-background">
               <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Username</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Address</TableHead>
+                <TableHead className="text-xs sm:text-sm">ID</TableHead>
+                <TableHead className="text-xs sm:text-sm">Username</TableHead>
+                <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Phone</TableHead>
+                <TableHead className="text-xs sm:text-sm hidden md:table-cell">Address</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-mono text-xs">{user.id}</TableCell>
-                  <TableCell className="font-medium">{user.username}</TableCell>
-                  <TableCell>{user.phone}</TableCell>
-                  <TableCell>{user.address}</TableCell>
+                  <TableCell className="font-medium text-xs sm:text-sm">{user.username}</TableCell>
+                  <TableCell className="text-xs sm:text-sm hidden sm:table-cell">{user.phone}</TableCell>
+                  <TableCell className="text-xs sm:text-sm hidden md:table-cell">{user.address}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

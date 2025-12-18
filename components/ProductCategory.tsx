@@ -263,7 +263,7 @@ export function ProductCategory() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full  max-w-4xl mx-auto">
       <div className="bg-white p-6 rounded-xl shadow-lg border">
         <h3 className="text-2xl font-bold mb-6 text-gray-800">
           {editingId ? "Edit Product" : "Add Product"}

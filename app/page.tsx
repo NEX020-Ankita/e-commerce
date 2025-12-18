@@ -4,13 +4,12 @@ import { useState, useEffect } from 'react';
 import MainPage from "./main/page";
 import { ProductGrid } from "@/components/ProductGrid";
 import { supabase } from "@/lib/supabase";
-
-
+import { useSearch } from "@/contexts/SearchContext";
 
 export default function Home() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState<string>('');
   const [cart, setCart] = useState<{ [key: number]: number }>({});
+  const { searchTerm } = useSearch();
   
 
   useEffect(() => {
@@ -57,7 +56,7 @@ export default function Home() {
 
   return (
     <div>
-      <MainPage onCategoryFilter={setCategoryFilter} cart={cart} updateCart={updateCart} onSearch={setSearchTerm} />
+      <MainPage onCategoryFilter={setCategoryFilter} cart={cart} updateCart={updateCart} />
       <ProductGrid categoryFilter={categoryFilter} searchTerm={searchTerm} cart={cart} updateCart={updateCart} />
     </div>
   );

@@ -3,20 +3,48 @@
 import { useState, useEffect } from 'react';
 import { ConditionalHeader } from './ConditionalHeader';
 import { ConditionalFooter } from './ConditionalFooter';
+import { supabase } from '@/lib/supabase';
+import { SearchProvider, useSearch } from '@/contexts/SearchContext';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
 }
 
-export function ClientLayout({ children }: ClientLayoutProps) {
+function ClientLayoutContent({ children }: ClientLayoutProps) {
   const [cart, setCart] = useState<{[key: number]: number}>({});
+  const { setSearchTerm } = useSearch();
 
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      setCart(JSON.parse(savedCart));
-    }
+    loadCart();
+    
+    const channel = supabase
+      .channel('cart-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'cart' },
+        () => loadCart()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
+
+  const loadCart = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('cart')
+      .select('product_id, quantity')
+      .eq('user_id', user.id);
+
+    const cartData: {[key: number]: number} = {};
+    data?.forEach(item => {
+      cartData[item.product_id] = item.quantity;
+    });
+    setCart(cartData);
+  };
 
   const updateCart = (productId: number, quantity: number) => {
     const newCart = { ...cart };
@@ -26,11 +54,10 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       newCart[productId] = quantity;
     }
     setCart(newCart);
-    localStorage.setItem('cart', JSON.stringify(newCart));
   };
 
   const handleSearch = (searchTerm: string) => {
-    // This can be handled by individual pages
+    setSearchTerm(searchTerm);
   };
 
   return (
@@ -41,5 +68,13 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       </div>
       <ConditionalFooter />
     </>
+  );
+}
+
+export function ClientLayout({ children }: ClientLayoutProps) {
+  return (
+    <SearchProvider>
+      <ClientLayoutContent>{children}</ClientLayoutContent>
+    </SearchProvider>
   );
 }

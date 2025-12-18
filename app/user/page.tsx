@@ -26,7 +26,7 @@ export default function UserForm() {
     } else {
       console.log('User saved:', data);
       setFormData({ username: '', phone: '', address: '' });
-      router.push('/main');
+      router.push('/');
     }
     
     setLoading(false);

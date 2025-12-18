@@ -163,12 +163,12 @@ export function ProductGrid({
     <section className=" bg-gray-50">
       <div className="container mx-auto px-4">
         <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12 text-gray-800 tracking-tight px-4">
-          {searchTerm
+         {searchTerm
             ? `Search Results for "${searchTerm}"`
             : categoryFilter
             ? `${categoryFilter} Products`
             : "All Products"}
-        </h2>
+       </h2>
 
         {filteredProducts.length === 0 && (categoryFilter || searchTerm) && (
           <div className="text-center py-8 sm:py-10 px-4">
