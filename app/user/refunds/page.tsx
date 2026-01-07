@@ -6,8 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { RefundRequestForm } from "@/components/RefundRequestForm";
-import { RefundPolicy } from "@/components/RefundPolicy";
 import { Clock, CheckCircle, XCircle, AlertCircle, Plus } from "lucide-react";
 
 interface RefundRequest {
@@ -96,12 +94,9 @@ export default function UserRefundsPage() {
             ← Back to Refunds
           </Button>
         </div>
-        <RefundRequestForm
-          onSuccess={() => {
-            setShowRequestForm(false);
-            fetchRefundRequests();
-          }}
-        />
+        <div className="p-6 border rounded-lg">
+          <p className="text-gray-600">Refund request form is currently unavailable.</p>
+        </div>
       </div>
     );
   }
@@ -203,7 +198,16 @@ export default function UserRefundsPage() {
         </div>
 
         <div className="lg:col-span-1">
-          <RefundPolicy />
+          <Card>
+            <CardHeader>
+              <CardTitle>Refund Policy</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                Our refund policy information will be displayed here.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

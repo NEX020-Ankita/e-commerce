@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { useSearchParams } from 'next/navigation';
 import AdminLayout from '@/components/AdminLayout';
 import AdminAuth from '@/components/AdminAuth';
 
-export default function PoliciesPage() {
+function PoliciesContent() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -133,66 +133,74 @@ export default function PoliciesPage() {
   };
 
   return (
-    <AdminAuth>
-      <AdminLayout>
-        <div className="p-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{editingPolicy ? 'Edit Policy' : 'Create Policy'}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
+    <div className="p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{editingPolicy ? 'Edit Policy' : 'Create Policy'}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className='h-96 w-full'>
+              <Label htmlFor="description">Description</Label>
+              {isPreview ? (
+                <div className="border rounded-md p-4 h-80 overflow-y-auto bg-gray-50">
+                  <div dangerouslySetInnerHTML={{ __html: description }} />
+                </div>
+              ) : (
+                <div className="h-80 overflow-y-auto border rounded-md">
+                  <TiptapEditor
+                    content={description}
+                    onChange={setDescription}
                   />
                 </div>
-                
-                <div className='h-96 w-full'>
-                  <Label htmlFor="description">Description</Label>
-                  {isPreview ? (
-                    <div className="border rounded-md p-4 h-80 overflow-y-auto bg-gray-50">
-                      <div dangerouslySetInnerHTML={{ __html: description }} />
-                    </div>
-                  ) : (
-                    <div className="h-80 overflow-y-auto border rounded-md">
-                      <TiptapEditor
-                        content={description}
-                        onChange={setDescription}
-                      />
-                    </div>
-                  )}
-                </div>
+              )}
+            </div>
 
-                <div className="pt-8 flex gap-4">
-                  <Button
-                    type="button" 
-                    onClick={() => window.location.href = '/admin/policy-manage'}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    Preview
-                  </Button>
-                  {editingPolicy && (
-                    <Button 
-                      type="button" 
-                      onClick={handleCancel}
-                      variant="outline"
-                    >
-                      Cancel
-                    </Button>
-                  )}
-                  <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
-                    {isLoading ? (editingPolicy ? 'Updating...' : 'Creating...') : (editingPolicy ? 'Update Policy' : 'Create Policy')}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
+            <div className="pt-8 flex gap-4">
+              <Button
+                type="button" 
+                onClick={() => window.location.href = '/admin/policy-manage'}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Preview
+              </Button>
+              {editingPolicy && (
+                <Button 
+                  type="button" 
+                  onClick={handleCancel}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+              )}
+              <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
+                {isLoading ? (editingPolicy ? 'Updating...' : 'Creating...') : (editingPolicy ? 'Update Policy' : 'Create Policy')}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function PoliciesPage() {
+  return (
+    <AdminAuth>
+      <AdminLayout>
+        <Suspense fallback={<div className="p-6">Loading...</div>}>
+          <PoliciesContent />
+        </Suspense>
       </AdminLayout>
     </AdminAuth>
   );

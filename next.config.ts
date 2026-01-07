@@ -2,7 +2,16 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['rukminim1.flixcart.com', 'zpjrvqmlzsbpalttpfuy.supabase.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'rukminim1.flixcart.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'zpjrvqmlzsbpalttpfuy.supabase.co',
+      },
+    ],
   },
 };
 
