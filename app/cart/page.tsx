@@ -23,6 +23,7 @@ interface CartItem {
   title: string;
   price: number;
   image_urls?: string[];
+  offer_percentage: number;
 }
 
 export default function CartPage() {
@@ -180,7 +181,10 @@ export default function CartPage() {
                 key={item.id}
                 className="flex items-center p-6 border-b border-gray-200 last:border-b-0"
               >
-                <div className="flex-shrink-0 w-20 h-20 mr-4">
+                <div 
+                  className="flex-shrink-0 w-20 h-20 mr-4 cursor-pointer"
+                  onClick={() => router.push(`/product/${item.product_id}`)}
+                >
                   <Image
                     src={
                       Array.isArray(item.image_urls) &&
@@ -191,12 +195,15 @@ export default function CartPage() {
                     alt={item.title}
                     width={80}
                     height={80}
-                    className="w-full h-full object-cover rounded-lg"
+                    className="w-full h-full object-cover rounded-lg hover:opacity-80 transition-opacity"
                   />
                 </div>
 
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                  <h3 
+                    className="text-lg font-semibold text-gray-900 mb-1 cursor-pointer hover:text-blue-600 transition-colors"
+                    onClick={() => router.push(`/product/${item.product_id}`)}
+                  >
                     {item.title}
                   </h3>
                   <p className="text-lg font-bold text-blue-600">

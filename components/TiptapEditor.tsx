@@ -112,9 +112,9 @@ export function TiptapEditor({ content, onChange }: TiptapEditorProps) {
   }
 
   return (
-    <div className="border border-gray-300 rounded-md overflow-hidden">
+    <div className=" border-gray-300 rounded-md overflow-hidden">
       {/* Toolbar */}
-      <div className="border-b border-gray-300 p-3 bg-gray-50">
+      <div className=" border-blue-500 p-3 bg-gray-200">
         <div className="flex flex-wrap gap-2">
           <button
             type="button"

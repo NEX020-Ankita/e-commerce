@@ -12,6 +12,7 @@ interface Product {
   title: string;
   price: number;
   image_urls?: string[];
+  offer_percentage?: number;
 }
 
 interface CartItem extends Product {
@@ -66,7 +67,8 @@ export function Cart({ cart, updateCart }: CartProps) {
           title: cartItem.title,
           price: cartItem.price,
           image_urls: cartItem.image_urls,
-          quantity: cartItem.quantity
+          quantity: cartItem.quantity,
+          offer_percentage: cartItem.offer_percentage
         })) || [];
         setCartItems(items);
       }
@@ -200,7 +202,7 @@ export function Cart({ cart, updateCart }: CartProps) {
                     setIsOpen(false);
                     router.push("/cart");
                   }}
-                  className="w-full bg-yellow-300 text-white py-2 rounded hover:bg-yellow-400 transition-colors"
+                  className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors"
                 >
                   View Cart
                 </button>

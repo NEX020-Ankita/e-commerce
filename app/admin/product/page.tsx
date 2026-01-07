@@ -230,7 +230,7 @@ export default function ProductPage() {
   return (
     <AdminAuth>
       <AdminLayout>
-        <h1 className="text-3xl font-bold text-center mb-10">All Products</h1>
+        <h1 className="text-3xl font-bold text-center mb-10"></h1>
         <div className="w-full">
           {products.length === 0 ? (
             <div className="text-center py-12">

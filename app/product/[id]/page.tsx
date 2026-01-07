@@ -7,6 +7,7 @@ import Image from "next/image";
 import { ShoppingCart, ArrowLeft, Star } from "lucide-react";
 import { DescriptionRenderer } from "@/components/DescriptionRenderer";
 
+
 interface Product {
   id: number;
   title: string;
@@ -18,6 +19,8 @@ interface Product {
   rating: number;
   created_at: string;
 }
+
+
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -33,6 +36,7 @@ export default function ProductDetailPage() {
   const [totalRatings, setTotalRatings] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
+
   // 🚀 FIXED: Buy Now Handler
   const handleBuyNow = () => {
     if (!product) return;
@@ -44,6 +48,7 @@ export default function ProductDetailPage() {
       const id = Number(params.id);
       fetchProduct(id);
       fetchRatings(id);
+
     }
   }, [params.id]);
 
@@ -133,6 +138,8 @@ export default function ProductDetailPage() {
       alert("Failed to save rating");
     }
   };
+
+
 
   if (loading) {
     return (
@@ -352,7 +359,6 @@ export default function ProductDetailPage() {
               Add to Cart
             </button>
 
-            {/* 🚀 FIXED BUY NOW BUTTON */}
             <button
               onClick={handleBuyNow}
               className="flex-1 bg-orange-600 text-white py-3 px-6 rounded-lg hover:bg-orange-700"
@@ -360,8 +366,12 @@ export default function ProductDetailPage() {
               Buy Now
             </button>
           </div>
+
+
         </div>
       </div>
+
+
     </div>
   );
 }

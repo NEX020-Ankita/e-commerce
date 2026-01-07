@@ -167,7 +167,7 @@ export function ProductGrid({
             ? `Search Results for "${searchTerm}"`
             : categoryFilter
             ? `${categoryFilter} Products`
-            : "All Products"}
+            : ""}
        </h2>
 
         {filteredProducts.length === 0 && (categoryFilter || searchTerm) && (
@@ -237,22 +237,34 @@ export function ProductGrid({
                     )}
                   </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart(product.id);
-                    }}
-                    className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg shadow hover:bg-blue-700 active:scale-95 transition-all w-full sm:w-auto"
-                  >
-                    <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">Add</span>
-                    <span className="sm:hidden">Add to Cart</span>
-                    {getCartCount(product.id) > 0 && (
+                  {getCartCount(product.id) > 0 ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push('/cart');
+                      }}
+                      className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white text-xs sm:text-sm font-medium rounded-lg shadow hover:bg-green-700 active:scale-95 transition-all w-full sm:w-auto"
+                    >
+                      <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Go to Cart</span>
+                      <span className="sm:hidden">View Cart</span>
                       <span className="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs shadow">
                         {getCartCount(product.id)}
                       </span>
-                    )}
-                  </button>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product.id);
+                      }}
+                      className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg shadow hover:bg-blue-700 active:scale-95 transition-all w-full sm:w-auto"
+                    >
+                      <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Add</span>
+                      <span className="sm:hidden">Add to Cart</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
